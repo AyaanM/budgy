@@ -8,6 +8,10 @@ import money
 from datetime import date
 from time import sleep
 
+### VARIABLES ###
+FILE = ##SQL FILE##
+
+
 def checkInt(NUM):
     try:
         NUM = float(NUM)
@@ -105,4 +109,9 @@ class User:
 if __name__ == "__main__":
     USER = User()
     print("Welcome to Budgy!")
+
+    ### open sql file for user ###
+
+
+
     USER.menu()
