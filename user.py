@@ -163,6 +163,13 @@ if __name__ == "__main__":
         createDatabase()
         getUserInfo()
 
+    # get info from database
+    INFO = CURSOR.execute('''
+        SELECT * FROM user_account
+    ;''').fetchall()
+
+    print(INFO)
+
     USER = User()
 
     USER.menu()
