@@ -19,5 +19,5 @@
 - Has area to set budget
 
 ## TO-DO
-- Design UML table for classes that allows to edit account/view account
+- Allow transactions to occur and store them in db
 
