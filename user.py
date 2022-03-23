@@ -55,7 +55,7 @@ def getUserInfo():
     print("Since this is your first time using Budgy, we will have to set up your account \n")
 
     NAME = input("Your Name (this will be the same as your username): ")
-    CURRENT_BALANCE = input("Your Current Account Balance (this can be updated later): ")
+    CURRENT_BALANCE = checkInt(input("Your Current Account Balance (this can be updated later): "))
 
     FIRST_TIME_INFO = (NAME, CURRENT_BALANCE)
 
@@ -70,13 +70,16 @@ def getUserInfo():
             )
     ;''', FIRST_TIME_INFO)
 
+    CONNECTION.commit()
+
 class User:
     '''
     class to view the account
     '''
-    def __init__(self):
-        self.BALANCE = 0
-        self.TRANSACTIONS = []
+    def __init__(self, USER_INFO):
+        self.USERNAME = USER_INFO[0]
+        self.BALANCE = USER_INFO[1]
+        self.TRANSACTIONS = USER_INFO[2]
 
     ### MODIFIERS ###
     def widthdrawMoney(self):
@@ -84,13 +87,19 @@ class User:
         spend money from your current balance
         :return: None
         '''
-        AMOUNT = checkInt(input("Money Spent: "))
+        AMOUNT_SPENT = checkInt(input("Money Spent: "))
+
+        if AMOUNT_SPENT > self.BALANCE:
+            PROCEED = input("You don't have enough money, would you like to go in debt? (Y/n) ")
+        if PROCEED == "n" or PROCEED == "N":
+            self.menu() # go back to menu
+
         LOCATION = input("Location: ")
         DATE = date.today()
         TYPE = "Withdrawal"
-        TRANSACTION = money.Transaction(AMOUNT, LOCATION, DATE, TYPE)
+        TRANSACTION = money.Transaction(AMOUNT_SPENT, LOCATION, DATE, TYPE)
         self.TRANSACTIONS.append(TRANSACTION)
-        self.BALANCE = self.BALANCE - AMOUNT
+        self.BALANCE = self.BALANCE - AMOUNT_SPENT
 
     def depositMoney(self):
         '''
@@ -111,7 +120,7 @@ class User:
         displays the balance
         :return: None
         '''
-        print(f"Balance: {self.BALANCE}")
+        print(f"Balance: ${self.BALANCE}")
 
     def viewTransactions(self):
         '''
@@ -130,7 +139,6 @@ class User:
         pick option to perform a certain task
         :return: None
         '''
-        print("")
         OPTION = checkInt(input('''Pick an option from the list below
 1. Check Balance
 2. See Previous Transactions
@@ -166,10 +174,8 @@ if __name__ == "__main__":
     # get info from database
     INFO = CURSOR.execute('''
         SELECT * FROM user_account
-    ;''').fetchall()
+    ;''').fetchone()
 
-    print(INFO)
-
-    USER = User()
+    USER = User(INFO)
 
     USER.menu()
