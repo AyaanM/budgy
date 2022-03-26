@@ -4,23 +4,8 @@ author: Ayaan Merchant
 date-created: 2022-01-07
 '''
 
-import user
+import functions
 from datetime import date
-
-class ManageMoney:
-    '''
-    manage money by either adding or deducting money from current balance
-    '''
-
-    def __init__(self, AMOUNT, CURRENT_BALANCE):
-        self.AMOUNT = AMOUNT
-        self.BALANCE = CURRENT_BALANCE
-
-    def addMoney(self):
-        self.BALANCE = self.BALANCE + self.AMOUNT
-
-    def deductMoney(self):
-        self.BALANCE = self.BALANCE - self.AMOUNT
 
 class Transaction:
     '''
@@ -37,7 +22,7 @@ class Transaction:
         spend money from your current balance
         :return: None
         '''
-        AMOUNT_SPENT = user.checkInt(input("Money Spent: "))
+        AMOUNT_SPENT = functions.checkInt(input("Money Spent: "))
 
         '''if AMOUNT_SPENT > self.BALANCE:
             PROCEED = input("You don't have enough money, would you like to go in debt? (Y/n) ")
@@ -55,7 +40,7 @@ class Transaction:
         deposit money to current balance
         :return:
         '''
-        AMOUNT = user.checkInt(input("Money Earned: "))
+        AMOUNT = functions.checkInt(input("Money Earned: "))
         LOCATION = input("Location: ")
         DATE = date.today()
         TYPE = "Deposit"

@@ -19,6 +19,7 @@
 - Has area to set budget
 
 ## TO-DO
+- figure out how to commit things in database
 - Allow transactions to occur and store them in db
 - add a account date created
 

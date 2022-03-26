@@ -7,7 +7,7 @@ date-created: 2022-01-07
 import sqlite3
 import pathlib
 import money
-from datetime import date
+import functions
 from time import sleep
 
 ### VARIABLES ###
@@ -19,15 +19,6 @@ if (pathlib.Path.cwd() / DB_FILE).exists():
 
 CONNECTION = sqlite3.connect(DB_FILE)
 CURSOR = CONNECTION.cursor()
-
-
-def checkInt(NUM):
-    try:
-        NUM = float(NUM)
-        return NUM
-    except ValueError:
-        NEW_NUM = input("Input must be a number: ")
-        return checkInt(NEW_NUM)
 
 ## create database and do account set up
 def createDatabase():
@@ -42,8 +33,8 @@ def createDatabase():
                 username TEXT PRIMARY KEY,
                 account_balance INT,
                 transactions TEXT
-                )
-        ;''') # transactions stores lists converted to strings
+            )
+    ;''') # transactions stores lists converted to strings
 
 def getUserInfo():
     '''
@@ -54,7 +45,7 @@ def getUserInfo():
     print("Since this is your first time using Budgy, we will have to set up your account \n")
 
     NAME = input("Your Name (this will be the same as your username): ")
-    CURRENT_BALANCE = checkInt(input("Your Current Account Balance (this can be updated later): "))
+    CURRENT_BALANCE = functions.checkInt(input("Your Current Account Balance (this can be updated later): "))
     print("Thank-you! Your account has been set up!")
 
     FIRST_TIME_INFO = (NAME, CURRENT_BALANCE)
@@ -90,7 +81,7 @@ class User:
         '''
         TRANSACTION = money.Transaction(self.BALANCE)
 
-        TRANSACTION_TYPE = checkInt(input('''Would you like to:
+        TRANSACTION_TYPE = functions.checkInt(input('''Would you like to:
 1. Deposit Money
 2. Withdraw Money
 > '''))
@@ -102,8 +93,9 @@ class User:
 
         self.TRANSACTIONS.append(TRANSACTION.getTransaction())
         self.BALANCE = TRANSACTION.getNewBal()
-        print(f'Transaction Completed ${self.BALANCE} is your new balance')
+        print(f'Transaction Completed; ${self.BALANCE} is your new balance')
 
+    # store data when exiting the program
     def storeData(self):
         '''
         stores the data into the sql database
@@ -126,6 +118,12 @@ class User:
 
         CONNECTION.commit()
 
+        # TEMPPPP
+        INFO = CURSOR.execute('''
+            SELECT * FROM user_account
+        ;''').fetchone()
+        print(INFO)
+
     ### ACCESSORS ###
     def viewBalance(self):
         '''
@@ -147,7 +145,7 @@ class User:
         pick option to perform a certain task
         :return: None
         '''
-        OPTION = checkInt(input('''\nPick an option from the list below
+        OPTION = functions.checkInt(input('''\nPick an option from the list below
 1. Check Balance
 2. See Previous Transactions
 3. Make a Transaction
@@ -169,7 +167,7 @@ class User:
 if __name__ == "__main__":
     print("Welcome to Budgy!")
 
-    if FIRST_RUN:
+    if FIRST_RUN == True:
         createDatabase()
         getUserInfo()
 
