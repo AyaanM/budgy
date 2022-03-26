@@ -36,15 +36,14 @@ def createDatabase():
     :return: None
     '''
 
-    # create DB
     CURSOR.execute('''
         CREATE TABLE
             user_account(
-                username TEXT NOT NULL PRIMARY KEY,
-                account_balance STR,
-                transactions BLOB 
+                username TEXT PRIMARY KEY,
+                account_balance INT,
+                transactions TEXT
                 )
-        ;''') # transactions stores objects but not sure what to store
+        ;''') # transactions stores lists converted to strings
 
 def getUserInfo():
     '''
@@ -56,6 +55,7 @@ def getUserInfo():
 
     NAME = input("Your Name (this will be the same as your username): ")
     CURRENT_BALANCE = checkInt(input("Your Current Account Balance (this can be updated later): "))
+    print("Thank-you! Your account has been set up!")
 
     FIRST_TIME_INFO = (NAME, CURRENT_BALANCE)
 
@@ -79,7 +79,8 @@ class User:
     def __init__(self, USER_INFO):
         self.USERNAME = USER_INFO[0]
         self.BALANCE = USER_INFO[1]
-        self.TRANSACTIONS = USER_INFO[2]
+        self.TRANSACTIONS = [USER_INFO[2]]
+        print(self.TRANSACTIONS)
 
     ### MODIFIERS ###
     def widthdrawMoney(self):
@@ -97,7 +98,7 @@ class User:
         LOCATION = input("Location: ")
         DATE = date.today()
         TYPE = "Withdrawal"
-        TRANSACTION = money.Transaction(AMOUNT_SPENT, LOCATION, DATE, TYPE)
+        TRANSACTION = (AMOUNT_SPENT, LOCATION, DATE.strftime("%Y/%m/%d"), TYPE)
         self.TRANSACTIONS.append(TRANSACTION)
         self.BALANCE = self.BALANCE - AMOUNT_SPENT
 
@@ -110,9 +111,31 @@ class User:
         LOCATION = input("Location: ")
         DATE = date.today()
         TYPE = "Deposit"
-        TRANSACTION = money.Transaction(AMOUNT, LOCATION, DATE, TYPE)
+        TRANSACTION = [AMOUNT, LOCATION, DATE.strftime("%Y/%m/%d"), TYPE]
         self.TRANSACTIONS.append(TRANSACTION)
         self.BALANCE = self.BALANCE + AMOUNT
+
+    def storeData(self):
+        '''
+        stores the data into the sql database
+        :return: None
+        '''
+        TRANSACTIONS = str(self.TRANSACTIONS)
+        NEW_DATA = (self.BALANCE, TRANSACTIONS)
+        print(NEW_DATA)
+
+        CURSOR.execute('''
+            INSERT INTO
+                user_account(
+                    account_balance,
+                    transactions
+                    )
+            VALUES(
+                ?, ? 
+                )
+        ;''', NEW_DATA)
+
+        CONNECTION.commit()
 
     ### ACCESSORS ###
     def viewBalance(self):
@@ -127,19 +150,15 @@ class User:
         check previously made transactions
         :return: None
         '''
-        for i in range(len(self.TRANSACTIONS)):
-            print(f'''# {i+1}
-    {self.TRANSACTIONS[i].AMOUNT}
-    {self.TRANSACTIONS[i].LOCATION}
-    {self.TRANSACTIONS[i].DATE}
-    {self.TRANSACTIONS[i].TYPE}''')
+        for TRANSACTION in self.TRANSACTIONS:
+            print(TRANSACTION)
 
     def menu(self):
         '''
         pick option to perform a certain task
         :return: None
         '''
-        OPTION = checkInt(input('''Pick an option from the list below
+        OPTION = checkInt(input('''\nPick an option from the list below
 1. Check Balance
 2. See Previous Transactions
 3. Make a Transaction
@@ -160,12 +179,13 @@ class User:
             elif TRANSACTION_TYPE == 2:
                 self.widthdrawMoney()
         else:
+            self.storeData()
             exit()
         sleep(0.3)
         return self.menu()
 
 if __name__ == "__main__":
-    print("Welcome to Budgy! \n")
+    print("Welcome to Budgy!")
 
     if FIRST_RUN:
         createDatabase()
@@ -175,6 +195,8 @@ if __name__ == "__main__":
     INFO = CURSOR.execute('''
         SELECT * FROM user_account
     ;''').fetchone()
+
+    print(INFO)
 
     USER = User(INFO)
 
