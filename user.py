@@ -83,37 +83,26 @@ class User:
         print(self.TRANSACTIONS)
 
     ### MODIFIERS ###
-    def widthdrawMoney(self):
+    def makeTransaction(self):
         '''
         spend money from your current balance
         :return: None
         '''
-        AMOUNT_SPENT = checkInt(input("Money Spent: "))
+        TRANSACTION = money.Transaction(self.BALANCE)
 
-        if AMOUNT_SPENT > self.BALANCE:
-            PROCEED = input("You don't have enough money, would you like to go in debt? (Y/n) ")
-        if PROCEED == "n" or PROCEED == "N":
-            self.menu() # go back to menu
+        TRANSACTION_TYPE = checkInt(input('''Would you like to:
+1. Deposit Money
+2. Withdraw Money
+> '''))
 
-        LOCATION = input("Location: ")
-        DATE = date.today()
-        TYPE = "Withdrawal"
-        TRANSACTION = (AMOUNT_SPENT, LOCATION, DATE.strftime("%Y/%m/%d"), TYPE)
-        self.TRANSACTIONS.append(TRANSACTION)
-        self.BALANCE = self.BALANCE - AMOUNT_SPENT
+        if TRANSACTION_TYPE == 1:
+            TRANSACTION.deposit()
+        elif TRANSACTION_TYPE == 2:
+            TRANSACTION.widthdrawl()
 
-    def depositMoney(self):
-        '''
-        add money to your current balance
-        :return: None
-        '''
-        AMOUNT = checkInt(input("Money Earned: "))
-        LOCATION = input("Location: ")
-        DATE = date.today()
-        TYPE = "Deposit"
-        TRANSACTION = [AMOUNT, LOCATION, DATE.strftime("%Y/%m/%d"), TYPE]
-        self.TRANSACTIONS.append(TRANSACTION)
-        self.BALANCE = self.BALANCE + AMOUNT
+        self.TRANSACTIONS.append(TRANSACTION.getTransaction())
+        self.BALANCE = TRANSACTION.getNewBal()
+        print(f'Transaction Completed ${self.BALANCE} is your new balance')
 
     def storeData(self):
         '''
@@ -132,7 +121,7 @@ class User:
                     )
             VALUES(
                 ?, ? 
-                )
+            )
         ;''', NEW_DATA)
 
         CONNECTION.commit()
@@ -170,14 +159,7 @@ class User:
         elif OPTION == 2:
             self.viewTransactions()
         elif OPTION == 3:
-            TRANSACTION_TYPE = checkInt(input('''Would you like to:
-1. Deposit Money
-2. Withdraw Money
-> '''))
-            if TRANSACTION_TYPE == 1:
-                self.depositMoney()
-            elif TRANSACTION_TYPE == 2:
-                self.widthdrawMoney()
+            self.makeTransaction()
         else:
             self.storeData()
             exit()
