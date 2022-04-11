@@ -48,7 +48,7 @@ def getUserInfo():
     CURRENT_BALANCE = functions.checkInt(input("Your Current Account Balance (this can be updated later): "))
     print("Thank-you! Your account has been set up!")
 
-    FIRST_TIME_INFO = (NAME, CURRENT_BALANCE)
+    FIRST_TIME_INFO = [NAME, CURRENT_BALANCE]
 
     CURSOR.execute('''
         INSERT INTO
@@ -63,6 +63,35 @@ def getUserInfo():
 
     CONNECTION.commit()
 
+# put data in database upon program exit
+def storeData(BALANCE, TRANSACTIONS):
+    '''
+    stores the data into the sql database
+    :return: None
+    '''
+    global CURSOR, CONNECTION
+
+    TRANSACTIONS = str(TRANSACTIONS)
+    NEW_DATA = [BALANCE, TRANSACTIONS]
+    NEW_DATA = [BALANCE]
+    print(NEW_DATA)
+
+    CURSOR.execute('''
+        UPDATE
+            user_account
+        SET
+            account_balance = ?
+    ;''', NEW_DATA)
+
+    CONNECTION.commit()
+
+    # TEMPPPP
+    INFO = CURSOR.execute('''
+        SELECT * FROM user_account
+    ;''').fetchone()
+    print(INFO)
+
+## Program Classes
 class User:
     '''
     class to view the account
@@ -94,35 +123,6 @@ class User:
         self.TRANSACTIONS.append(TRANSACTION.getTransaction())
         self.BALANCE = TRANSACTION.getNewBal()
         print(f'Transaction Completed; ${self.BALANCE} is your new balance')
-
-    # store data when exiting the program
-    def storeData(self):
-        '''
-        stores the data into the sql database
-        :return: None
-        '''
-        TRANSACTIONS = str(self.TRANSACTIONS)
-        NEW_DATA = (self.BALANCE, TRANSACTIONS)
-        print(NEW_DATA)
-
-        CURSOR.execute('''
-            INSERT INTO
-                user_account(
-                    account_balance,
-                    transactions
-                    )
-            VALUES(
-                ?, ? 
-            )
-        ;''', NEW_DATA)
-
-        CONNECTION.commit()
-
-        # TEMPPPP
-        INFO = CURSOR.execute('''
-            SELECT * FROM user_account
-        ;''').fetchone()
-        print(INFO)
 
     ### ACCESSORS ###
     def viewBalance(self):
@@ -159,7 +159,7 @@ class User:
         elif OPTION == 3:
             self.makeTransaction()
         else:
-            self.storeData()
+            storeData(self.BALANCE, self.TRANSACTIONS)
             exit()
         sleep(0.3)
         return self.menu()
