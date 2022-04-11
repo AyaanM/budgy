@@ -41,6 +41,8 @@ def getUserInfo():
     when first run, get and store user info in DB
     :return: None
     '''
+    global CURSOR, CONNECTION
+
     print("Thank-you for choosing Budgy")
     print("Since this is your first time using Budgy, we will have to set up your account \n")
 
@@ -57,39 +59,31 @@ def getUserInfo():
                 account_balance
                 )
         VALUES(
-            ?, ?  
+            ?, ?
             )
     ;''', FIRST_TIME_INFO)
 
     CONNECTION.commit()
 
-# put data in database upon program exit
 def storeData(BALANCE, TRANSACTIONS):
     '''
-    stores the data into the sql database
+    stores the data into the sql database upon program exit
     :return: None
     '''
     global CURSOR, CONNECTION
 
-    TRANSACTIONS = str(TRANSACTIONS)
+    TRANSACTIONS = str(TRANSACTIONS) #because currently a list
     NEW_DATA = [BALANCE, TRANSACTIONS]
-    NEW_DATA = [BALANCE]
-    print(NEW_DATA)
 
     CURSOR.execute('''
         UPDATE
             user_account
         SET
-            account_balance = ?
+            account_balance = ?,
+            transactions = ?
     ;''', NEW_DATA)
 
     CONNECTION.commit()
-
-    # TEMPPPP
-    INFO = CURSOR.execute('''
-        SELECT * FROM user_account
-    ;''').fetchone()
-    print(INFO)
 
 ## Program Classes
 class User:
@@ -100,7 +94,6 @@ class User:
         self.USERNAME = USER_INFO[0]
         self.BALANCE = USER_INFO[1]
         self.TRANSACTIONS = [USER_INFO[2]]
-        print(self.TRANSACTIONS)
 
     ### MODIFIERS ###
     def makeTransaction(self):
@@ -137,8 +130,9 @@ class User:
         check previously made transactions
         :return: None
         '''
+        print(self.TRANSACTIONS)
         for TRANSACTION in self.TRANSACTIONS:
-            print(TRANSACTION)
+            print(f"1. {TRANSACTION}")
 
     def menu(self):
         '''
@@ -175,8 +169,6 @@ if __name__ == "__main__":
     INFO = CURSOR.execute('''
         SELECT * FROM user_account
     ;''').fetchone()
-
-    print(INFO)
 
     USER = User(INFO)
 
