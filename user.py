@@ -31,10 +31,19 @@ def createDatabase():
         CREATE TABLE
             user_account(
                 username TEXT PRIMARY KEY,
-                account_balance INT,
-                transactions TEXT
+                account_balance INT
             )
-    ;''') # transactions stores lists converted to strings
+    ;''')
+
+    CURSOR.execute('''
+        CREATE TABLE
+            user_transactions(
+                transaction_amount INT,
+                transaction_location TEXT,
+                transaction_date TEXT,
+                transaction_type TEXT
+            )
+    ;''')
 
 def getUserInfo():
     '''
@@ -65,23 +74,33 @@ def getUserInfo():
 
     CONNECTION.commit()
 
-def storeData(BALANCE, TRANSACTIONS):
+def storeData(BALANCE):
     '''
     stores the data into the sql database upon program exit
     :return: None
     '''
     global CURSOR, CONNECTION
 
-    TRANSACTIONS = str(TRANSACTIONS) #because currently a list
-    NEW_DATA = [BALANCE, TRANSACTIONS]
+    NEW_DATA = [BALANCE]
 
     CURSOR.execute('''
         UPDATE
             user_account
         SET
             account_balance = ?,
-            transactions = ?
     ;''', NEW_DATA)
+
+    CONNECTION.commit()
+
+def saveTransaction(TRANSACTION):
+
+    CURSOR.execute('''
+            INSERT INTO
+                user_transactions
+            VALUES(
+                ?, ?, ?, ?
+            )
+        ;''', TRANSACTION) # amount, location, date, type
 
     CONNECTION.commit()
 
@@ -90,10 +109,10 @@ class User:
     '''
     class to view the account
     '''
-    def __init__(self, USER_INFO):
-        self.USERNAME = USER_INFO[0]
-        self.BALANCE = USER_INFO[1]
-        self.TRANSACTIONS = [USER_INFO[2]]
+    def __init__(self, USER_DATA, USER_TRANSACTIONS):
+        self.USERNAME = USER_DATA[0]
+        self.BALANCE = USER_DATA[1]
+        self.TRANSACTIONS = USER_TRANSACTIONS
 
     ### MODIFIERS ###
     def makeTransaction(self):
@@ -113,8 +132,8 @@ class User:
         elif TRANSACTION_TYPE == 2:
             TRANSACTION.widthdrawl()
 
-        self.TRANSACTIONS.append(TRANSACTION.getTransaction())
         self.BALANCE = TRANSACTION.getNewBal()
+        saveTransaction(TRANSACTION.getTransaction())
         print(f'Transaction Completed; ${self.BALANCE} is your new balance')
 
     ### ACCESSORS ###
@@ -130,9 +149,10 @@ class User:
         check previously made transactions
         :return: None
         '''
-        print(self.TRANSACTIONS)
+        COUNT = 1
         for TRANSACTION in self.TRANSACTIONS:
-            print(f"1. {TRANSACTION}")
+            print(f"{COUNT}. {TRANSACTION}")
+            COUNT += 1
 
     def menu(self):
         '''
@@ -153,7 +173,7 @@ class User:
         elif OPTION == 3:
             self.makeTransaction()
         else:
-            storeData(self.BALANCE, self.TRANSACTIONS)
+            storeData(self.BALANCE)
             exit()
         sleep(0.3)
         return self.menu()
@@ -166,10 +186,15 @@ if __name__ == "__main__":
         getUserInfo()
 
     # get info from database
-    INFO = CURSOR.execute('''
+    USER_DATA = CURSOR.execute('''
         SELECT * FROM user_account
     ;''').fetchone()
 
-    USER = User(INFO)
+    USER_TRANSACTIONS = CURSOR.execute('''
+        SELECT * FROM user_transactions
+    ;''').fetchall()
+
+    # insert info and initiate class
+    USER = User(USER_DATA, USER_TRANSACTIONS)
 
     USER.menu()
