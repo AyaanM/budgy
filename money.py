@@ -13,10 +13,6 @@ class Transaction:
     '''
 
     def __init__(self, CURRENT_BALANCE):
-        self.AMOUNT = ""
-        self.LOCATION = ""
-        self.DATE = ""
-        self.TYPE = ""
         self.TRANSACTION = []
         self.BALANCE = CURRENT_BALANCE
 
@@ -26,17 +22,17 @@ class Transaction:
         spend money from your current balance
         :return: None
         '''
-        self.AMOUNT = functions.checkInt(input("Money Spent: "))
+        AMOUNT = functions.checkInt(input("Money Spent: "))
 
         '''if AMOUNT_SPENT > self.BALANCE:
             PROCEED = input("You don't have enough money, would you like to go in debt? (Y/n) ")
             if PROCEED == "n" or PROCEED == "N":
                 return user.User.menu()  # go back to menu'''
 
-        self.LOCATION = input("Location: ")
-        self.DATE = date.today().strftime("%Y/%m/%d")
-        self.TYPE = "Withdrawal"
-        self.TRANSACTION = [self.AMOUNT, self.LOCATION, self.DATE, self.TYPE]
+        LOCATION = input("Location: ")
+        DATE = date.today().strftime("%Y/%m/%d")
+        TYPE = "Withdrawal"
+        self.TRANSACTION = [AMOUNT, LOCATION, DATE, TYPE]
         self.BALANCE = self.BALANCE - self.AMOUNT
 
     def deposit(self):
@@ -44,19 +40,19 @@ class Transaction:
         deposit money to current balance
         :return:
         '''
-        self.AMOUNT = functions.checkInt(input("Money Earned: "))
-        self.LOCATION = input("Location: ")
-        self.DATE = date.today()
-        self.TYPE = "Deposit"
+        AMOUNT = functions.checkInt(input("Money Earned: "))
+        LOCATION = input("Location: ")
+        DATE = date.today()
+        TYPE = "Deposit"
 
-        self.TRANSACTION = [self.AMOUNT, self.LOCATION, self.DATE, self.TYPE]
+        self.TRANSACTION = [AMOUNT, LOCATION, DATE, TYPE]
         self.BALANCE = self.BALANCE + self.AMOUNT
 
     ### --- ACCESSORS --- ###
     def getTransaction(self):
         '''
         return the transaction
-        :return: array
+        :return: list
         '''
         return self.TRANSACTION
 

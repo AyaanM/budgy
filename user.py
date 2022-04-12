@@ -1,5 +1,5 @@
 '''
-title: class to see account
+title: main class to view user account
 author: Ayaan Merchant
 date-created: 2022-01-07
 '''
@@ -7,7 +7,7 @@ date-created: 2022-01-07
 import sqlite3
 import pathlib
 import money
-import functions
+import functions # universally used functions
 from time import sleep
 
 ### VARIABLES ###
@@ -20,28 +20,28 @@ if (pathlib.Path.cwd() / DB_FILE).exists():
 CONNECTION = sqlite3.connect(DB_FILE)
 CURSOR = CONNECTION.cursor()
 
-## create database and do account set up
-def createDatabase():
+## create databases and do account set up
+def createDatabases():
     '''
-    create the database for use account
+    create the databases for user account & transactions
     :return: None
     '''
 
     CURSOR.execute('''
         CREATE TABLE
             user_account(
-                username TEXT PRIMARY KEY,
-                account_balance INT
+                username TEXT NOT NULL PRIMARY KEY,
+                account_balance INT NOT NULL
             )
     ;''')
 
     CURSOR.execute('''
         CREATE TABLE
             user_transactions(
-                transaction_amount INT,
-                transaction_location TEXT,
-                transaction_date TEXT,
-                transaction_type TEXT
+                transaction_amount INT NOT NULL,
+                transaction_location TEXT NOT NULL,
+                transaction_date TEXT NOT NULL,
+                transaction_type TEXT NOT NULL
             )
     ;''')
 
@@ -50,8 +50,6 @@ def getUserInfo():
     when first run, get and store user info in DB
     :return: None
     '''
-    global CURSOR, CONNECTION
-
     print("Thank-you for choosing Budgy")
     print("Since this is your first time using Budgy, we will have to set up your account \n")
 
@@ -76,11 +74,10 @@ def getUserInfo():
 
 def storeData(BALANCE):
     '''
-    stores the data into the sql database upon program exit
+    store  data in database upon program exit
+    :param BALANCE: (int) current account balance
     :return: None
     '''
-    global CURSOR, CONNECTION
-
     NEW_DATA = [BALANCE]
 
     CURSOR.execute('''
@@ -93,6 +90,11 @@ def storeData(BALANCE):
     CONNECTION.commit()
 
 def saveTransaction(TRANSACTION):
+    '''
+    store the transaction in the database
+    :param TRANSACTION: (list) of transaction info
+    :return: None
+    '''
 
     CURSOR.execute('''
             INSERT INTO
@@ -108,6 +110,17 @@ def saveTransaction(TRANSACTION):
 class User:
     '''
     class to view the account
+
+    :methods:
+    - menu()
+    - makeTransaction()
+    - viewBalance()
+    - viewTransactions
+
+    :attributes:
+    - USERNAME
+    - BALANCE
+    - TRANSACTIONS
     '''
     def __init__(self, USER_DATA, USER_TRANSACTIONS):
         self.USERNAME = USER_DATA[0]
@@ -132,6 +145,7 @@ class User:
         elif TRANSACTION_TYPE == 2:
             TRANSACTION.widthdrawl()
 
+        # do the transaction
         self.BALANCE = TRANSACTION.getNewBal()
         saveTransaction(TRANSACTION.getTransaction())
         print(f'Transaction Completed; ${self.BALANCE} is your new balance')
@@ -154,9 +168,10 @@ class User:
             print(f"{COUNT}. {TRANSACTION}")
             COUNT += 1
 
+    ### MENU TO NAVIGATE THE ENTIRE USER ACCOUNT ###
     def menu(self):
         '''
-        pick option to perform a certain task
+        pick option to perform a certain task, created in user class for efficiency
         :return: None
         '''
         OPTION = functions.checkInt(input('''\nPick an option from the list below
@@ -182,7 +197,7 @@ if __name__ == "__main__":
     print("Welcome to Budgy!")
 
     if FIRST_RUN == True:
-        createDatabase()
+        createDatabases()
         getUserInfo()
 
     # get info from database
@@ -198,3 +213,5 @@ if __name__ == "__main__":
     USER = User(USER_DATA, USER_TRANSACTIONS)
 
     USER.menu()
+
+
