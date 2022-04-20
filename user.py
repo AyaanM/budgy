@@ -8,7 +8,10 @@ import sqlite3
 import pathlib
 import money
 import functions # universally used functions
-from time import sleep
+
+# different user accounts
+import checkingsAccount
+import savingsAccount
 
 ### VARIABLES ###
 DB_FILE = "user_account.db"
@@ -190,8 +193,21 @@ class User:
         else:
             storeData(self.BALANCE)
             exit()
-        sleep(0.3)
         return self.menu()
+
+def selectAccount():
+    '''
+    selects either savings or checking account
+    :return: (int) selected option
+    '''
+    ACCOUNT = functions.checkInt(input('''\nWhich account would you like to log into
+    1. Checking Account
+    2. Saving Account
+    > '''))
+
+    if ACCOUNT != 1 or ACCOUNT !=2:
+        print("Select from the Options Listed.")
+        return selectAccount()
 
 if __name__ == "__main__":
     print("Welcome to Budgy!")
