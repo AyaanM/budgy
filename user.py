@@ -4,14 +4,7 @@ author: Ayaan Merchant
 date-created: 2022-01-07
 '''
 
-import sqlite3
-import pathlib
-import money
-import functions # universally used functions
-
-# different user accounts
-import checkingsAccount
-import savingsAccount
+import sqlite3, pathlib, money, functions, checkingsAccount
 
 ### VARIABLES ###
 DB_FILE = "user_account.db"
@@ -34,7 +27,8 @@ def createDatabases():
         CREATE TABLE
             user_account(
                 username TEXT NOT NULL PRIMARY KEY,
-                account_balance INT NOT NULL
+                balance_checking INT NOT NULL,
+                balance_saving INT NOT NULL
             )
     ;''')
 
@@ -54,41 +48,26 @@ def getUserInfo():
     :return: None
     '''
     print("Thank-you for choosing Budgy")
-    print("Since this is your first time using Budgy, we will have to set up your account \n")
+    print("Since this is your first time using Budgy, we will be setting up your account \n")
 
-    NAME = input("Your Name (this will be the same as your username): ")
-    CURRENT_BALANCE = functions.checkInt(input("Your Current Account Balance (this can be updated later): "))
+    NAME = input("Your Name: ")
+    BALANCE_CHECKING = functions.checkInt(input("Your Checking Account's Balance (this can be updated later): "))
+    BALANCE_SAVINGS = functions.checkInt(input("Your Saving Account's Balance (this can be updated later): "))
     print("Thank-you! Your account has been set up!")
 
-    FIRST_TIME_INFO = [NAME, CURRENT_BALANCE]
+    FIRST_TIME_INFO = [NAME, BALANCE_CHECKING, BALANCE_SAVINGS]
 
     CURSOR.execute('''
         INSERT INTO
             user_account(
                 username,
-                account_balance
+                balance_checking,
+                balance_saving
                 )
         VALUES(
-            ?, ?
+            ?, ?, ?
             )
     ;''', FIRST_TIME_INFO)
-
-    CONNECTION.commit()
-
-def storeData(BALANCE):
-    '''
-    store  data in database upon program exit
-    :param BALANCE: (int) current account balance
-    :return: None
-    '''
-    NEW_DATA = [BALANCE]
-
-    CURSOR.execute('''
-        UPDATE
-            user_account
-        SET
-            account_balance = ?,
-    ;''', NEW_DATA)
 
     CONNECTION.commit()
 
@@ -109,6 +88,21 @@ def saveTransaction(TRANSACTION):
 
     CONNECTION.commit()
 
+def storeUserData(BALANCE, BALANCE_CHECKING, BALANCE_SAVINGS):
+    '''
+    store  data in database upon program exit
+    :param BALANCE: (int) current account balance
+    :return: None
+    '''
+    NEW_DATA = [BALANCE, BALANCE_CHECKING, BALANCE_SAVINGS]
+
+    CURSOR.execute('''
+        UPDATE
+            user_account,
+        SET
+            ?, ?, ?
+    ;''', NEW_DATA)
+
 ## Program Classes
 class User:
     '''
@@ -127,7 +121,8 @@ class User:
     '''
     def __init__(self, USER_DATA, USER_TRANSACTIONS):
         self.USERNAME = USER_DATA[0]
-        self.BALANCE = USER_DATA[1]
+        self.BALANCE_CHECKING = USER_DATA[1]
+        self.BALANCE_SAVINGS = USER_DATA[2]
         self.TRANSACTIONS = USER_TRANSACTIONS
 
     ### MODIFIERS ###
