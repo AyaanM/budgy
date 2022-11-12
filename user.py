@@ -4,7 +4,7 @@ author: Ayaan Merchant
 date-created: 2022-01-07
 '''
 
-import sqlite3, pathlib, money, functions, checkingsAccount
+import sqlite3, pathlib, money, functions
 
 ### VARIABLES ###
 DB_FILE = "user_account.db"
@@ -22,7 +22,6 @@ def createDatabases():
     create the databases for user account & transactions
     :return: None
     '''
-
     CURSOR.execute('''
         CREATE TABLE
             user_account(
@@ -38,7 +37,8 @@ def createDatabases():
                 transaction_amount INT NOT NULL,
                 transaction_location TEXT NOT NULL,
                 transaction_date TEXT NOT NULL,
-                transaction_type TEXT NOT NULL
+                transaction_type TEXT NOT NULL,
+                transaction_account TEXT NOT NULL
             )
     ;''')
 
@@ -82,23 +82,24 @@ def saveTransaction(TRANSACTION):
             INSERT INTO
                 user_transactions
             VALUES(
-                ?, ?, ?, ?
+                ?, ?, ?, ?, ?
             )
-        ;''', TRANSACTION) # amount, location, date, type
+        ;''', TRANSACTION) # amount, location, date, type, account
 
     CONNECTION.commit()
 
-def storeUserData(BALANCE, BALANCE_CHECKING, BALANCE_SAVINGS):
+def storeData(NAME, ACCOUNTS_BALANCE):
     '''
     store  data in database upon program exit
     :param BALANCE: (int) current account balance
     :return: None
     '''
-    NEW_DATA = [BALANCE, BALANCE_CHECKING, BALANCE_SAVINGS]
+
+    NEW_DATA = [NAME, ACCOUNTS_BALANCE[0], ACCOUNTS_BALANCE[1]]
 
     CURSOR.execute('''
         UPDATE
-            user_account,
+            user_account
         SET
             ?, ?, ?
     ;''', NEW_DATA)
@@ -121,9 +122,9 @@ class User:
     '''
     def __init__(self, USER_DATA, USER_TRANSACTIONS):
         self.USERNAME = USER_DATA[0]
-        self.BALANCE_CHECKING = USER_DATA[1]
-        self.BALANCE_SAVINGS = USER_DATA[2]
+        self.ACCOUNTS_BALANCE = [USER_DATA[1], USER_DATA[2]] # checkings, savings
         self.TRANSACTIONS = USER_TRANSACTIONS
+        self.ACCOUNT_TYPES = ["Checkings", "Savings"]
 
     ### MODIFIERS ###
     def makeTransaction(self):
@@ -131,7 +132,13 @@ class User:
         spend money from your current balance
         :return: None
         '''
-        TRANSACTION = money.Transaction(self.BALANCE)
+        ACCOUNT = functions.checkInt(input('''Make transaction from (select account)
+1. Checkings
+2. Savings  
+>''')) - 1
+        AMOUNT = functions.checkInt(input("Money: "))
+        LOCATION = input("Location: ")
+        TRANSACTION = money.Transaction(AMOUNT, LOCATION, self.ACCOUNTS_BALANCE[ACCOUNT], self.ACCOUNT_TYPES[ACCOUNT])
 
         TRANSACTION_TYPE = functions.checkInt(input('''Would you like to:
 1. Deposit Money
@@ -144,9 +151,9 @@ class User:
             TRANSACTION.widthdrawl()
 
         # do the transaction
-        self.BALANCE = TRANSACTION.getNewBal()
+        self.ACCOUNTS_BALANCE[ACCOUNT] = TRANSACTION.getNewBal()
         saveTransaction(TRANSACTION.getTransaction())
-        print(f'Transaction Completed; ${self.BALANCE} is your new balance')
+        print(f'Transaction Completed; ${self.ACCOUNTS_BALANCE[ACCOUNT]} is your new balance')
 
     ### ACCESSORS ###
     def viewBalance(self):
@@ -154,7 +161,8 @@ class User:
         displays the balance
         :return: None
         '''
-        print(f"Balance: ${self.BALANCE}")
+        print(f"Checkings Account: ${self.ACCOUNTS_BALANCE[0]}")
+        print(f"Savings Account: ${self.ACCOUNTS_BALANCE[1]}")
 
     def viewTransactions(self):
         '''
@@ -186,7 +194,7 @@ class User:
         elif OPTION == 3:
             self.makeTransaction()
         else:
-            storeData(self.BALANCE)
+            storeData(self.USERNAME, self.ACCOUNTS_BALANCE)
             exit()
         return self.menu()
 

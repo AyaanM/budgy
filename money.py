@@ -12,41 +12,31 @@ class Transaction:
     store the transaction
     '''
 
-    def __init__(self, CURRENT_BALANCE):
+    def __init__(self, AMOUNT, LOCATION, CURRENT_BALANCE, ACCOUNT_TYPE):
         self.TRANSACTION = []
+        self.AMOUNT = AMOUNT
+        self.LOCATION = LOCATION
+        self.DATE = date.today()
         self.BALANCE = CURRENT_BALANCE
+        self.ACCOUNT = ACCOUNT_TYPE
+        
 
     ### --- MODIFIERS --- ###
-    def widthdrawl(self):
-        '''
-        spend money from your current balance
-        :return: None
-        '''
-        AMOUNT = functions.checkInt(input("Money Spent: "))
-
-        '''if AMOUNT_SPENT > self.BALANCE:
-            PROCEED = input("You don't have enough money, would you like to go in debt? (Y/n) ")
-            if PROCEED == "n" or PROCEED == "N":
-                return user.User.menu()  # go back to menu'''
-
-        LOCATION = input("Location: ")
-        DATE = date.today().strftime("%Y/%m/%d")
-        TYPE = "Withdrawal"
-        self.TRANSACTION = [AMOUNT, LOCATION, DATE, TYPE]
-        self.BALANCE = self.BALANCE - self.AMOUNT
-
     def deposit(self):
         '''
         deposit money to current balance
         :return:
         '''
-        AMOUNT = functions.checkInt(input("Money Earned: "))
-        LOCATION = input("Location: ")
-        DATE = date.today()
-        TYPE = "Deposit"
-
-        self.TRANSACTION = [AMOUNT, LOCATION, DATE, TYPE]
+        self.TRANSACTION = [self.AMOUNT, self.LOCATION, self.DATE, "Deposit", self.ACCOUNT]
         self.BALANCE = self.BALANCE + self.AMOUNT
+
+    def widthdrawl(self):
+        '''
+        spend money from your current balance
+        :return: None
+        '''
+        self.TRANSACTION = [self.AMOUNT, self.LOCATION, self.DATE, "Withdrawal", self.ACCOUNT]
+        self.BALANCE = self.BALANCE - self.AMOUNT
 
     ### --- ACCESSORS --- ###
     def getTransaction(self):

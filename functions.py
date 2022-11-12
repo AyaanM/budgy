@@ -5,7 +5,7 @@ date: 2022-03-26
 '''
 def checkInt(NUM):
     try:
-        NUM = float(NUM)
+        NUM = int(NUM)
         return NUM
     except ValueError:
         NEW_NUM = input("Input must be a number: ")
