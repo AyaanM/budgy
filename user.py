@@ -104,6 +104,8 @@ def storeData(NAME, ACCOUNTS_BALANCE):
             ?, ?, ?
     ;''', NEW_DATA)
 
+    CONNECTION.commit()
+
 ## Program Classes
 class User:
     '''
