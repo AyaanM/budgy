@@ -3,6 +3,7 @@ main class to view the user account (V2 as V1 was unreadable)
 author: Ayaan Merchant
 date-created: 2022-11-16
 '''
+## THE WORD USER SIGNIFIES THE USER OF THE ACCOUNT, AND THE WORD ACCOUNT SIGNIFIES THE ACCOUNT AS A WHOLE (THE USER AND THEIR ACCOUNT PROPERTIES)
 
 from pathlib import Path
 from databases import user_database
@@ -12,21 +13,20 @@ if not Path("user_account.db").exists():
     FIRST_RUN = True
 else: FIRST_RUN = False
 
-class User: # class to run the user program
+class user_account: # class to run the user program
     
-    def __init__(self, USER_DATA, USER_TRANSACTIONS):
-        self.USERNAME = USER_DATA[0]
-        self.ACCOUNTS_BALANCE = [USER_DATA[2], USER_DATA[3]] # checkings, savings
-        self.TRANSACTIONS = USER_TRANSACTIONS
+    def __init__(self, ACCOUNT_DATA, ACCOUNT_TRANSACTIONS):
+        self.USER_INFO = [ACCOUNT_DATA[0], ACCOUNT_DATA[1]] # username, password
+        self.ACCOUNTS_BALANCE = [ACCOUNT_DATA[2], ACCOUNT_DATA[3]] # checkings, savings
+        self.TRANSACTIONS = ACCOUNT_TRANSACTIONS
 
     def viewBalance(self): #displays balance
         print(f"Checkings Account: ${self.ACCOUNTS_BALANCE[0]}")
         print(f"Savings Account: ${self.ACCOUNTS_BALANCE[1]}")
 
     def viewTransactions(self): #displays transactions
-        print(True)
-        for TRANSACTION in self.TRANSACTIONS:
-            print(f"{i+1}. {TRANSACTION}")
+        for i in range(len(self.TRANSACTIONS)):
+            print(f"{i+1}. {self.TRANSACTIONS[i]}")
 
     def menu(self): # pick option to perform task
 
@@ -44,24 +44,24 @@ class User: # class to run the user program
             elif OPTION == 3:
                 self.makeTransaction()
             else:
-                #USER_ACCOUNT.storeData(self.USERNAME, self.ACCOUNTS_BALANCE)
+                USER_DATABASE.storeData(self.USER_INFO, self.ACCOUNTS_BALANCE, self.TRANSACTIONS)
                 exit()
             return self.menu()
 
 if __name__ == "__main__":
-    USER_ACCOUNT = user_database() # initiate the DB
+    USER_DATABASE = user_database() # initiate the DB
     
     if FIRST_RUN == True: 
         print("Thank-you for choosing Budgy.")
         print("Since this is your first time using Budgy, we will be setting up your account.\n")
-        USER_ACCOUNT.createAccount()
+        USER_DATABASE.createAccount()
         print("\nThank-you! Your account has been set up!")
 
-    USER_DATA, USER_TRANSACTIONS = USER_ACCOUNT.get_info()
+    ACCOUNT_DATA, ACCOUNT_TRANSACTIONS = USER_DATABASE.get_info()
 
-    USER = User(USER_DATA, USER_TRANSACTIONS)
+    USER_ACCOUNT = user_account(ACCOUNT_DATA, ACCOUNT_TRANSACTIONS)
 
-    USER.menu()
+    USER_ACCOUNT.menu()
 
     
     

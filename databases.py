@@ -53,15 +53,43 @@ class user_database:
             VALUES(?, ?, ?, ?)
         ;''', INFO)
 
+        ## TEMPPPPPPPPPPPPPPPPPPP
+        TRANSACTION = [100, "cabelas", "2022", "deposit", "checkings"]
+        
+        self.CURSOR.execute('''
+                    INSERT INTO
+                        user_transactions
+                    VALUES(
+                        ?, ?, ?, ?, ?
+                    )
+                ;''', TRANSACTION) # amount, location, date, type, account
+
         self.CONNECTION.commit()
 
     def get_info(self): #get info from DB
-        USER_DATA = self.CURSOR.execute('''
+        ACCOUNT_DATA = self.CURSOR.execute('''
         SELECT * FROM user_account
         ;''').fetchone()
 
-        USER_TRANSACTIONS = self.CURSOR.execute('''
+        ACCOUNT_TRANSACTIONS = self.CURSOR.execute('''
         SELECT * FROM user_transactions
         ;''').fetchall()
 
-        return USER_DATA, USER_TRANSACTIONS
+        return ACCOUNT_DATA, ACCOUNT_TRANSACTIONS
+
+    def storeData(self, USER_INFO, ACCOUNTS_BALANCE, TRANSACTIONS): # stores user data upon exit
+
+        ACCOUNT_INFO = USER_INFO + ACCOUNTS_BALANCE #username, pass, checkings, savings
+
+        self.CURSOR.execute('''
+        UPDATE
+            user_account
+        SET
+            username = ?, 
+            password = ?, 
+            balance_checking = ?, 
+            balance_saving = ?
+    ;''', ACCOUNT_INFO)
+
+        self.CONNECTION.commit()
+
