@@ -4,14 +4,64 @@ author: Ayaan Merchant
 date-created: 2022-11-16
 '''
 
-def createAccount(): # database to store user account
+import sqlite3
+import functions
 
-    CURSOR.execute('''
+
+class user_database:
+    def __init__(self):
+        self.CONNECTION = sqlite3.connect("user_account.db") #connect to the users account
+        self.CURSOR = self.CONNECTION.cursor()
+        self.USERNAME = ""
+        self.PASSWORD = ""
+        self.BALANCE_CHECKING = None
+        self.BALANCE_SAVINGS = None
+
+    def createAccount(self): # create database to store user account and get info
+
+        self.CURSOR.execute('''
+            CREATE TABLE
+                user_account(
+                    username TEXT NOT NULL PRIMARY KEY,
+                    password TEXT NOT NULL,
+                    balance_checking INT NOT NULL,
+                    balance_saving INT NOT NULL
+                )
+        ;''')
+
+        self.CURSOR.execute('''
         CREATE TABLE
-            user_account(
-                username TEXT NOT NULL PRIMARY KEY,
-                password TEXT NOT NULL,
-                balance_checking INT NOT NULL,
-                balance_saving INT NOT NULL
+            user_transactions(
+                transaction_amount INT NOT NULL,
+                transaction_location TEXT NOT NULL,
+                transaction_date TEXT NOT NULL,
+                transaction_type TEXT NOT NULL,
+                transaction_account TEXT NOT NULL
             )
     ;''')
+
+        ## import user info into account
+        self.USERNAME = input("Your Name: ")
+        self.PASSWORD = input("Your Password (can't be changed): ")
+        self.BALANCE_CHECKING = functions.checkInt(input("Your Checking Account's Balance (this can be updated later): "))
+        self.BALANCE_SAVINGS = functions.checkInt(input("Your Saving Account's Balance (this can be updated later): "))
+
+        INFO = [self.USERNAME, self.PASSWORD, self.BALANCE_CHECKING, self.BALANCE_SAVINGS]
+
+        self.CURSOR.execute('''
+            INSERT INTO user_account(username, password, balance_checking, balance_saving)
+            VALUES(?, ?, ?, ?)
+        ;''', INFO)
+
+        self.CONNECTION.commit()
+
+    def get_info(self): #get info from DB
+        USER_DATA = self.CURSOR.execute('''
+        SELECT * FROM user_account
+        ;''').fetchone()
+
+        USER_TRANSACTIONS = self.CURSOR.execute('''
+        SELECT * FROM user_transactions
+        ;''').fetchall()
+
+        return USER_DATA, USER_TRANSACTIONS

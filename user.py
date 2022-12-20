@@ -166,15 +166,6 @@ class User:
         print(f"Checkings Account: ${self.ACCOUNTS_BALANCE[0]}")
         print(f"Savings Account: ${self.ACCOUNTS_BALANCE[1]}")
 
-    def viewTransactions(self):
-        '''
-        check previously made transactions
-        :return: None
-        '''
-        COUNT = 1
-        for TRANSACTION in self.TRANSACTIONS:
-            print(f"{COUNT}. {TRANSACTION}")
-            COUNT += 1
 
     ### MENU TO NAVIGATE THE ENTIRE USER ACCOUNT ###
     def menu(self):
