@@ -53,19 +53,6 @@ class user_database:
             VALUES(?, ?, ?, ?)
         ;''', INFO)
 
-        ## TEMPPPPPPPPPPPPPPPPPPP
-        TRANSACTION = [100, "cabelas", "2022", "deposit", "checkings"]
-        
-        self.CURSOR.execute('''
-                    INSERT INTO
-                        user_transactions
-                    VALUES(
-                        ?, ?, ?, ?, ?
-                    )
-                ;''', TRANSACTION) # amount, location, date, type, account
-
-        self.CONNECTION.commit()
-
     def get_info(self): #get info from DB
         ACCOUNT_DATA = self.CURSOR.execute('''
         SELECT * FROM user_account

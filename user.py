@@ -4,7 +4,7 @@ author: Ayaan Merchant
 date-created: 2022-01-07
 '''
 
-import sqlite3, pathlib, money, functions
+import sqlite3, pathlib, userMoney, functions
 
 ### VARIABLES ###
 DB_FILE = "user_account.db"
@@ -140,7 +140,7 @@ class User:
 >''')) - 1
         AMOUNT = functions.checkInt(input("Money: "))
         LOCATION = input("Location: ")
-        TRANSACTION = money.Transaction(AMOUNT, LOCATION, self.ACCOUNTS_BALANCE[ACCOUNT], self.ACCOUNT_TYPES[ACCOUNT])
+        TRANSACTION = userMoney.Transaction(AMOUNT, LOCATION, self.ACCOUNTS_BALANCE[ACCOUNT], self.ACCOUNT_TYPES[ACCOUNT])
 
         TRANSACTION_TYPE = functions.checkInt(input('''Would you like to:
 1. Deposit Money

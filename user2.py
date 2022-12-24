@@ -7,7 +7,7 @@ date-created: 2022-11-16
 
 from pathlib import Path
 from databases import user_database
-import functions
+import functions, userMoney
 
 if not Path("user_account.db").exists():
     FIRST_RUN = True
@@ -19,14 +19,27 @@ class user_account: # class to run the user program
         self.USER_INFO = [ACCOUNT_DATA[0], ACCOUNT_DATA[1]] # username, password
         self.ACCOUNTS_BALANCE = [ACCOUNT_DATA[2], ACCOUNT_DATA[3]] # checkings, savings
         self.TRANSACTIONS = ACCOUNT_TRANSACTIONS
+        self.ACCOUNTS = ["Checkings", "Savings"]
 
     def viewBalance(self): #displays balance
-        print(f"Checkings Account: ${self.ACCOUNTS_BALANCE[0]}")
-        print(f"Savings Account: ${self.ACCOUNTS_BALANCE[1]}")
+        print(f"{self.ACCOUNTS[0]} Account: ${self.ACCOUNTS_BALANCE[0]}")
+        print(f"{self.ACCOUNTS[1]} Account: ${self.ACCOUNTS_BALANCE[1]}")
 
     def viewTransactions(self): #displays transactions
         for i in range(len(self.TRANSACTIONS)):
             print(f"{i+1}. {self.TRANSACTIONS[i]}")
+
+    def makeTransaction(self):
+        print("These are the accounts you currently have.")
+        for i in range(len(self.ACCOUNTS)):
+            print(f"{i+1}. {self.ACCOUNTS[i]}")
+        ACCOUNT = functions.checkInt(input("Make transaction from (select account) > "))-1
+        AMOUNT = functions.checkInt(input("Money: "))
+        LOCATION = input("Location: ")
+        TRANSACTION = userMoney.Transaction(AMOUNT, LOCATION, self.ACCOUNTS_BALANCE[ACCOUNT], self.ACCOUNTS[ACCOUNT])
+        TRANSACTION, self.ACCOUNTS_BALANCE[ACCOUNT] = TRANSACTION.create()
+        self.TRANSACTIONS.append(TRANSACTION)
+        print(f"Transaction Complete, ${self.ACCOUNTS_BALANCE[ACCOUNT]} is your new {self.ACCOUNTS[ACCOUNT]} balance.")
 
     def menu(self): # pick option to perform task
 
