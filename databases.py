@@ -6,6 +6,7 @@ date-created: 2022-11-16
 
 import sqlite3
 import functions
+from os import remove
 
 
 class user_database:
@@ -42,7 +43,16 @@ class user_database:
 
         ## import user info into account
         self.USERNAME = input("Your Name: ")
-        self.PASSWORD = input("Your Password (can't be changed): ")
+
+        PASSWORD = input("New Password: ")
+        CONFIRM_PASS = input("Confirm Password: ")
+        if functions.checkSamePass(PASSWORD, CONFIRM_PASS) == True:
+            self.PASSWORD = PASSWORD
+        else:
+            print("You Took Too Many Tries, Please Try Again Later.")
+            remove("user_account.db") # if took too many tries, user has to wait before creating account
+            exit()
+
         self.BALANCE_CHECKING = functions.checkInt(input("Your Checking Account's Balance (this can be updated later): "))
         self.BALANCE_SAVINGS = functions.checkInt(input("Your Saving Account's Balance (this can be updated later): "))
 

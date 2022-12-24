@@ -1,229 +1,116 @@
 '''
-title: main class to view user account
+main class to view the user account (V2 as V1 was unreadable)
 author: Ayaan Merchant
-date-created: 2022-01-07
+date-created: 2022-11-16
 '''
+## THE WORD USER SIGNIFIES THE USER OF THE ACCOUNT, AND THE WORD ACCOUNT SIGNIFIES THE ACCOUNT AS A WHOLE (THE USER AND THEIR ACCOUNT PROPERTIES)
 
-import sqlite3, pathlib, userMoney, functions
+from pathlib import Path
+from databases import user_database
+import functions, userMoney
 
-### VARIABLES ###
-DB_FILE = "user_account.db"
-FIRST_RUN = True
+if not Path("user_account.db").exists():
+    FIRST_RUN = True
+else: FIRST_RUN = False
 
-if (pathlib.Path.cwd() / DB_FILE).exists():
-    FIRST_RUN = False # don't create DB if already created
+class user_account: # class to run the user program
+    
+    def __init__(self, ACCOUNT_DATA, ACCOUNT_TRANSACTIONS):
+        self.USER_INFO = [ACCOUNT_DATA[0], ACCOUNT_DATA[1]] # username, password
+        self.ACCOUNTS_BALANCE = [ACCOUNT_DATA[2], ACCOUNT_DATA[3]] # checkings, savings
+        self.TRANSACTIONS = ACCOUNT_TRANSACTIONS # transactions that already took place (from db)
+        self.NEW_TRANSACTIONS = [] # transactions that will be made in this run of program
+        self.ACCOUNTS = ["Checkings", "Savings"]
 
-CONNECTION = sqlite3.connect(DB_FILE)
-CURSOR = CONNECTION.cursor()
+    def viewBalance(self): # displays balance
+        print(f"{self.ACCOUNTS[0]} Account: ${self.ACCOUNTS_BALANCE[0]}")
+        print(f"{self.ACCOUNTS[1]} Account: ${self.ACCOUNTS_BALANCE[1]}")
 
-## create databases and do account set up
-def createDatabases():
-    '''
-    create the databases for user account & transactions
-    :return: None
-    '''
-    CURSOR.execute('''
-        CREATE TABLE
-            user_account(
-                username TEXT NOT NULL PRIMARY KEY,
-                balance_checking INT NOT NULL,
-                balance_saving INT NOT NULL
-            )
-    ;''')
+    def viewTransactions(self): # displays transactions
+        TRANSACTIONS = self.TRANSACTIONS + self.NEW_TRANSACTIONS
+        for i in range(len(TRANSACTIONS)):
+            print(f"{i+1}. {TRANSACTIONS[i]}")
 
-    CURSOR.execute('''
-        CREATE TABLE
-            user_transactions(
-                transaction_amount INT NOT NULL,
-                transaction_location TEXT NOT NULL,
-                transaction_date TEXT NOT NULL,
-                transaction_type TEXT NOT NULL,
-                transaction_account TEXT NOT NULL
-            )
-    ;''')
-
-def getUserInfo():
-    '''
-    when first run, get and store user info in DB
-    :return: None
-    '''
-    print("Thank-you for choosing Budgy")
-    print("Since this is your first time using Budgy, we will be setting up your account \n")
-
-    NAME = input("Your Name: ")
-    BALANCE_CHECKING = functions.checkInt(input("Your Checking Account's Balance (this can be updated later): "))
-    BALANCE_SAVINGS = functions.checkInt(input("Your Saving Account's Balance (this can be updated later): "))
-    print("Thank-you! Your account has been set up!")
-
-    FIRST_TIME_INFO = [NAME, BALANCE_CHECKING, BALANCE_SAVINGS]
-
-    CURSOR.execute('''
-        INSERT INTO
-            user_account(
-                username,
-                balance_checking,
-                balance_saving
-                )
-        VALUES(
-            ?, ?, ?
-            )
-    ;''', FIRST_TIME_INFO)
-
-    CONNECTION.commit()
-
-def saveTransaction(TRANSACTION):
-    '''
-    store the transaction in the database
-    :param TRANSACTION: (list) of transaction info
-    :return: None
-    '''
-
-    CURSOR.execute('''
-            INSERT INTO
-                user_transactions
-            VALUES(
-                ?, ?, ?, ?, ?
-            )
-        ;''', TRANSACTION) # amount, location, date, type, account
-
-    CONNECTION.commit()
-
-def storeData(NAME, ACCOUNTS_BALANCE):
-    '''
-    store  data in database upon program exit
-    :param BALANCE: (int) current account balance
-    :return: None
-    '''
-
-    NEW_DATA = [NAME, ACCOUNTS_BALANCE[0], ACCOUNTS_BALANCE[1]]
-
-    CURSOR.execute('''
-        UPDATE
-            user_account
-        SET
-            ?, ?, ?
-    ;''', NEW_DATA)
-
-    CONNECTION.commit()
-
-## Program Classes
-class User:
-    '''
-    class to view the account
-
-    :methods:
-    - menu()
-    - makeTransaction()
-    - viewBalance()
-    - viewTransactions
-
-    :attributes:
-    - USERNAME
-    - BALANCE
-    - TRANSACTIONS
-    '''
-    def __init__(self, USER_DATA, USER_TRANSACTIONS):
-        self.USERNAME = USER_DATA[0]
-        self.ACCOUNTS_BALANCE = [USER_DATA[1], USER_DATA[2]] # checkings, savings
-        self.TRANSACTIONS = USER_TRANSACTIONS
-        self.ACCOUNT_TYPES = ["Checkings", "Savings"]
-
-    ### MODIFIERS ###
     def makeTransaction(self):
-        '''
-        spend money from your current balance
-        :return: None
-        '''
-        ACCOUNT = functions.checkInt(input('''Make transaction from (select account)
-1. Checkings
-2. Savings  
->''')) - 1
+        print("These are the accounts you currently have.")
+        for i in range(len(self.ACCOUNTS)):
+            print(f"{i+1}. {self.ACCOUNTS[i]}")
+        ACCOUNT = functions.checkInt(input("Make transaction from (select account) > "))-1
         AMOUNT = functions.checkInt(input("Money: "))
         LOCATION = input("Location: ")
-        TRANSACTION = userMoney.Transaction(AMOUNT, LOCATION, self.ACCOUNTS_BALANCE[ACCOUNT], self.ACCOUNT_TYPES[ACCOUNT])
+        TRANSACTION = userMoney.Transaction(AMOUNT, LOCATION, self.ACCOUNTS_BALANCE[ACCOUNT], self.ACCOUNTS[ACCOUNT])
+        TRANSACTION, self.ACCOUNTS_BALANCE[ACCOUNT] = TRANSACTION.create()
+        self.NEW_TRANSACTIONS.append(TRANSACTION)
+        print(f"Transaction Complete, ${self.ACCOUNTS_BALANCE[ACCOUNT]} is your new {self.ACCOUNTS[ACCOUNT]} balance.")
 
-        TRANSACTION_TYPE = functions.checkInt(input('''Would you like to:
-1. Deposit Money
-2. Withdraw Money
-> '''))
+    def viewInfo(self): # view account information
+        print(f'''
+Username: {self.USER_INFO[0]}
+        ''')
+        CHANGE = input("Would You Like To Change Any Account Information? (y/N) > ")
+        if CHANGE == "Y" or CHANGE == "y":
+            self.changeInfo()
 
-        if TRANSACTION_TYPE == 1:
-            TRANSACTION.deposit()
-        elif TRANSACTION_TYPE == 2:
-            TRANSACTION.widthdrawl()
+    def changeInfo(self): # change account information
+        NEW_USERNAME = input("Enter New Username (press enter if don't want to change): ")
+        if NEW_USERNAME != "":
+            self.USER_INFO[0] = NEW_USERNAME
+            print(f"Username changed to {self.USER_INFO[0]}")
 
-        # do the transaction
-        self.ACCOUNTS_BALANCE[ACCOUNT] = TRANSACTION.getNewBal()
-        saveTransaction(TRANSACTION.getTransaction())
-        print(f'Transaction Completed; ${self.ACCOUNTS_BALANCE[ACCOUNT]} is your new balance')
+        OLD_PASSWORD = input("Enter Old password to Change the Password (press enter if don't want to change): ")
+        if OLD_PASSWORD == self.USER_INFO[1]:
+            NEW_PASSWORD = input("Enter New Password: ")
+            CONFIRM_PASS = input("Confirm the New Password: ")
+            if functions.checkSamePass(NEW_PASSWORD, CONFIRM_PASS) == True:
+                self.USER_INFO[1] = NEW_PASSWORD
+                print("Your Password Has Been Changed.")
+            else:
+                print("You Took Too Many Tries! Please Try Again Later.")
+        elif OLD_PASSWORD != self.USER_INFO[1]:
+            print("Wrong Password! Please Try Again Later")
 
-    ### ACCESSORS ###
-    def viewBalance(self):
-        '''
-        displays the balance
-        :return: None
-        '''
-        print(f"Checkings Account: ${self.ACCOUNTS_BALANCE[0]}")
-        print(f"Savings Account: ${self.ACCOUNTS_BALANCE[1]}")
+    def menu(self): # pick option to perform task
+        OPTIONS_LIST = ["Check Balance", "See Previous Transactions", "Make a Transaction", "View/Edit Account Information"]
+        print("\nPick an option from the list below:")
+        for i in range(len(OPTIONS_LIST)):
+            print(f"{i+1}. {OPTIONS_LIST[i]}")
+        print(f"{i+2}. Exit \n")
+        OPTION = functions.checkInt(input("> "))-1
 
-
-    ### MENU TO NAVIGATE THE ENTIRE USER ACCOUNT ###
-    def menu(self):
-        '''
-        pick option to perform a certain task, created in user class for efficiency
-        :return: None
-        '''
-        OPTION = functions.checkInt(input('''\nPick an option from the list below
-1. Check Balance
-2. See Previous Transactions
-3. Make a Transaction
-4. Exit
-> '''))
-
-        if OPTION == 1:
+        if OPTION == 0:
             self.viewBalance()
-        elif OPTION == 2:
+        elif OPTION == 1:
             self.viewTransactions()
-        elif OPTION == 3:
+        elif OPTION == 2:
             self.makeTransaction()
+        elif OPTION == 3:
+            self.viewInfo()
         else:
-            storeData(self.USERNAME, self.ACCOUNTS_BALANCE)
+            USER_DATABASE.storeData(self.USER_INFO, self.ACCOUNTS_BALANCE, self.NEW_TRANSACTIONS)
             exit()
         return self.menu()
 
-def selectAccount():
-    '''
-    selects either savings or checking account
-    :return: (int) selected option
-    '''
-    ACCOUNT = functions.checkInt(input('''\nWhich account would you like to log into
-    1. Checking Account
-    2. Saving Account
-    > '''))
-
-    if ACCOUNT != 1 or ACCOUNT !=2:
-        print("Select from the Options Listed.")
-        return selectAccount()
-
 if __name__ == "__main__":
-    print("Welcome to Budgy!")
+    USER_DATABASE = user_database() # initiate the DB
+    
+    if FIRST_RUN == True: 
+        print("Thank-you for choosing Budgy.")
+        print("Since this is your first time using Budgy, we will be setting up your account.\n")
+        USER_DATABASE.createAccount()
+        print("\nThank-you! Your account has been set up!")
 
-    if FIRST_RUN == True:
-        createDatabases()
-        getUserInfo()
+    ACCOUNT_DATA, ACCOUNT_TRANSACTIONS = USER_DATABASE.get_info()
 
-    # get info from database
-    USER_DATA = CURSOR.execute('''
-        SELECT * FROM user_account
-    ;''').fetchone()
+    USER_ACCOUNT = user_account(ACCOUNT_DATA, ACCOUNT_TRANSACTIONS)
 
-    USER_TRANSACTIONS = CURSOR.execute('''
-        SELECT * FROM user_transactions
-    ;''').fetchall()
+    USER_ACCOUNT.menu()
 
-    # insert info and initiate class
-    USER = User(USER_DATA, USER_TRANSACTIONS)
+    
+    
 
-    USER.menu()
+
+
+
+
 
 
