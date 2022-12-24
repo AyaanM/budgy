@@ -78,5 +78,14 @@ class user_database:
             balance_saving = ?
     ;''', ACCOUNT_INFO)
 
+        for i in range(len(TRANSACTIONS)): # insert each new transaction one by one
+            self.CURSOR.execute('''
+            INSERT INTO
+                user_transactions
+            VALUES(
+                ?, ?, ?, ?, ?
+            )
+        ;''', TRANSACTIONS[i]) # amount, location, date, type, account
+
         self.CONNECTION.commit()
 

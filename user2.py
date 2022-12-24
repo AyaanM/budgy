@@ -18,16 +18,18 @@ class user_account: # class to run the user program
     def __init__(self, ACCOUNT_DATA, ACCOUNT_TRANSACTIONS):
         self.USER_INFO = [ACCOUNT_DATA[0], ACCOUNT_DATA[1]] # username, password
         self.ACCOUNTS_BALANCE = [ACCOUNT_DATA[2], ACCOUNT_DATA[3]] # checkings, savings
-        self.TRANSACTIONS = ACCOUNT_TRANSACTIONS
+        self.TRANSACTIONS = ACCOUNT_TRANSACTIONS # transactions that already took place (from db)
+        self.NEW_TRANSACTIONS = [] # transactions that will be made in this run of program
         self.ACCOUNTS = ["Checkings", "Savings"]
 
-    def viewBalance(self): #displays balance
+    def viewBalance(self): # displays balance
         print(f"{self.ACCOUNTS[0]} Account: ${self.ACCOUNTS_BALANCE[0]}")
         print(f"{self.ACCOUNTS[1]} Account: ${self.ACCOUNTS_BALANCE[1]}")
 
-    def viewTransactions(self): #displays transactions
-        for i in range(len(self.TRANSACTIONS)):
-            print(f"{i+1}. {self.TRANSACTIONS[i]}")
+    def viewTransactions(self): # displays transactions
+        TRANSACTIONS = self.TRANSACTIONS + self.NEW_TRANSACTIONS
+        for i in range(len(TRANSACTIONS)):
+            print(f"{i+1}. {TRANSACTIONS[i]}")
 
     def makeTransaction(self):
         print("These are the accounts you currently have.")
@@ -38,7 +40,7 @@ class user_account: # class to run the user program
         LOCATION = input("Location: ")
         TRANSACTION = userMoney.Transaction(AMOUNT, LOCATION, self.ACCOUNTS_BALANCE[ACCOUNT], self.ACCOUNTS[ACCOUNT])
         TRANSACTION, self.ACCOUNTS_BALANCE[ACCOUNT] = TRANSACTION.create()
-        self.TRANSACTIONS.append(TRANSACTION)
+        self.NEW_TRANSACTIONS.append(TRANSACTION)
         print(f"Transaction Complete, ${self.ACCOUNTS_BALANCE[ACCOUNT]} is your new {self.ACCOUNTS[ACCOUNT]} balance.")
 
     def menu(self): # pick option to perform task
@@ -57,7 +59,7 @@ class user_account: # class to run the user program
             elif OPTION == 3:
                 self.makeTransaction()
             else:
-                USER_DATABASE.storeData(self.USER_INFO, self.ACCOUNTS_BALANCE, self.TRANSACTIONS)
+                USER_DATABASE.storeData(self.USER_INFO, self.ACCOUNTS_BALANCE, self.NEW_TRANSACTIONS)
                 exit()
             return self.menu()
 
