@@ -10,6 +10,7 @@ from os import remove
 
 
 class user_database:
+
     def __init__(self):
         self.CONNECTION = sqlite3.connect("user_account.db") #connect to the users account
         self.CURSOR = self.CONNECTION.cursor()
@@ -18,7 +19,7 @@ class user_database:
         self.BALANCE_CHECKING = None
         self.BALANCE_SAVINGS = None
 
-    def createAccount(self): # create database to store user account and get info
+    def createAccount(self, INFO): # create database to store user account and get info
 
         self.CURSOR.execute('''
             CREATE TABLE
@@ -39,29 +40,14 @@ class user_database:
                 transaction_type TEXT NOT NULL,
                 transaction_account TEXT NOT NULL
             )
-    ;''')
-
-        ## import user info into account
-        self.USERNAME = input("Your Name: ")
-
-        PASSWORD = input("New Password: ")
-        CONFIRM_PASS = input("Confirm Password: ")
-        if functions.checkSamePass(PASSWORD, CONFIRM_PASS) == True:
-            self.PASSWORD = PASSWORD
-        else:
-            print("You Took Too Many Tries, Please Try Again Later.")
-            remove("user_account.db") # if took too many tries, user has to wait before creating account
-            exit()
-
-        self.BALANCE_CHECKING = functions.checkInt(input("Your Checking Account's Balance (this can be updated later): "))
-        self.BALANCE_SAVINGS = functions.checkInt(input("Your Saving Account's Balance (this can be updated later): "))
-
-        INFO = [self.USERNAME, self.PASSWORD, self.BALANCE_CHECKING, self.BALANCE_SAVINGS]
+        ;''')
 
         self.CURSOR.execute('''
             INSERT INTO user_account(username, password, balance_checking, balance_saving)
             VALUES(?, ?, ?, ?)
         ;''', INFO)
+
+        self.CONNECTION.commit()
 
     def get_info(self): #get info from DB
         ACCOUNT_DATA = self.CURSOR.execute('''
@@ -98,4 +84,16 @@ class user_database:
         ;''', TRANSACTIONS[i]) # amount, location, date, type, account
 
         self.CONNECTION.commit()
+
+class mainDB():
+    def __init__(self):
+        self.ACCOUNTS = "accounts.txt"
+        
+    def getAccounts(self):
+        return open(self.ACCOUNTS)
+
+    def addAccounts(self, USERNAME, PASSWORD):
+        file = open(self.ACCOUNTS, "w")
+        file.write(USERNAME, PASSWORD)
+
 
